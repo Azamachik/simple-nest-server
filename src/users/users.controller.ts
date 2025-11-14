@@ -1,8 +1,13 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {Body, Controller, Get, Post, UseGuards} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import {ApiOperation, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {User} from "./users.model";
+import {RolesGuard} from "../auth/roles.guard";
+import {Roles} from "../auth/roles-auth.decorator";
+import {AddRoleDto} from "./dto/add-role.dto";
+import {BanUserDto} from "./dto/ban-user.dto";
+import {UnbanUserDto} from "./dto/unban-user.dto";
 
 @ApiTags('Пользователи')
 @Controller('users')
@@ -11,6 +16,8 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Создание пользователя' })
   @ApiResponse({ status: 200, type: User})
+  @Roles("ADMIN")
+  @UseGuards(RolesGuard)
   @Post()
   create(@Body() userDto: CreateUserDto) {
     return this.usersService.createUser(userDto);
@@ -18,8 +25,37 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Получение всех пользователей' })
   @ApiResponse({ status: 200, type: [User]})
+  @Roles("ADMIN")
+  @UseGuards(RolesGuard)
   @Get()
   getAll() {
     return this.usersService.getAllUsers();
+  }
+
+  @ApiOperation({ summary: 'Добавление роли пользователю' })
+  @ApiResponse({ status: 200})
+  @Roles("ADMIN")
+  @UseGuards(RolesGuard)
+  @Post('/role')
+  addRole(@Body() dto: AddRoleDto) {
+    return this.usersService.addRole(dto);
+  }
+
+  @ApiOperation({ summary: 'Блокировка пользователя' })
+  @ApiResponse({ status: 200})
+  @Roles("ADMIN")
+  @UseGuards(RolesGuard)
+  @Post('/ban')
+  ban(@Body() dto: BanUserDto) {
+    return this.usersService.ban(dto);
+  }
+
+  @ApiOperation({ summary: 'Разблокировка пользователя' })
+  @ApiResponse({ status: 200})
+  @Roles("ADMIN")
+  @UseGuards(RolesGuard)
+  @Post('/unban')
+  unban(@Body() dto: UnbanUserDto) {
+    return this.usersService.unban(dto);
   }
 }
